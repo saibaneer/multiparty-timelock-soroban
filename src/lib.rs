@@ -53,7 +53,25 @@ fn is_initialized(env: &Env) -> bool {
 }
 
 #[contractimpl]
+/// Implementation of a multi-party claimable balance contract.
 impl MultiPartyClaimableBalanceContract {
+    /// Deposits funds into the contract, initializing it with the specified parameters.
+    ///
+    /// # Arguments
+    ///
+    /// * `env` - The contract environment.
+    /// * `from` - The address from which the funds are being deposited.
+    /// * `token` - The address of the token being deposited.
+    /// * `amount_per_beneficiary` - The amount of tokens each beneficiary will receive.
+    /// * `beneficiaries` - The list of beneficiary addresses.
+    /// * `timebound` - The timebound for claiming the funds.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic under the following conditions:
+    /// * If `amount_per_beneficiary` is less than 0.
+    /// * If the number of `beneficiaries` exceeds 10.
+    /// * If the contract has already been initialized.
     pub fn deposit(
         env: &Env,
         from: Address,
@@ -97,6 +115,19 @@ impl MultiPartyClaimableBalanceContract {
         env.storage().instance().set(&DataKey::Init, &true);
     }
 
+    /// Claims funds from the contract for a specific beneficiary.
+    ///
+    /// # Arguments
+    ///
+    /// * `env` - The contract environment.
+    /// * `beneficiary` - The address of the beneficiary claiming the funds.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic under the following conditions:
+    /// * If `beneficiary` is not in the list of beneficiaries.
+    /// * If the time bound for claiming the funds is not satisfied.
+    /// * If the beneficiary has already claimed their share of the funds.
     pub fn claim(env: &Env, beneficiary: Address) {
         beneficiary.require_auth();
         let mut claimable_balance: ClaimableBalance =
